@@ -49,13 +49,7 @@ export default {
       // title: this.post.title
     }
   },
-//   methods: {
-//     UpdateSubmit: function (project) {
-//       // メソッド内の `this` は、 Vue インスタンスを参照します
-// db.collection('projects').doc(this.project.id).set({
-//     Amoney: this.project.Amoney,
 
-// })
   methods: {
     UpdateSubmit: function (project) {
       // メソッド内の `this` は、 Vue インスタンスを参照します
