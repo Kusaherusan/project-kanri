@@ -2,6 +2,9 @@
 
 > Nuxt.js project
 
+Nuxt.jsとCloudFirestoreを使ってウェブアプリ開発のお勉強中
+UIフレームワークはVuetify
+
 ## Build Setup
 
 ``` bash
