@@ -1,7 +1,17 @@
 <template>
 
     <v-container>
-      <h2>プロジェクト達</h2>
+    
+                
+ <!-- <v-text-field append-icon="search" label="Search" single-line hide-details v-model="search"></v-text-field> -->
+    <v-data-table
+      :headers="headers"
+      :items="projects"
+      item-key="id"
+    >
+    <template v-slot:top>
+    
+      <v-toolbar-title>プロジェクト達</v-toolbar-title>
      <v-col class="text-right">
       <v-tooltip bottom>
     <template v-slot:activator="{ on }">
@@ -62,12 +72,19 @@
                     ></v-select>
                   </v-col> -->
                 </v-row>
- <!-- <v-text-field append-icon="search" label="Search" single-line hide-details v-model="search"></v-text-field> -->
-    <v-data-table
-      :headers="headers"
-      :items="projects"
-      item-key="id"
-    >
+                <v-dialog v-model="dialogDelete" max-width="500px">
+          <v-card>
+            <v-card-title class="headline">Are you sure you want to delete this item?</v-card-title>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="blue darken-1" text @click="closeDelete">Cancel</v-btn>
+              <v-btn color="blue darken-1" text @click="deleteItemConfirm">OK</v-btn>
+              <v-spacer></v-spacer>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+     
+    </template>
      <template v-slot:[`item.actions`]="{ item }">
       <v-btn
         icon
@@ -75,21 +92,27 @@
         nuxt
            
       >
-      <v-icon dark>
-        mdi-pencil
-      </v-icon>
+        <v-icon dark>
+          mdi-pencil
+        </v-icon>
       </v-btn>
+      <v-icon
+        
+        @click="deleteItem(item)"
+      >
+        mdi-delete
+      </v-icon>
     </template>
       </v-data-table>
 
-<v-row>
+<!-- <v-row>
       <v-col>
         <h2>テスト用にオブジェクトの状態を表示する</h2>
         nameFilterValue<pre>{{nameFilterValue}}</pre>
         teamFilterValue<pre>{{teamFilterValue}}</pre>
         search<pre>{{ projects }}</pre>
       </v-col>
-    </v-row>
+    </v-row> -->
     </v-container>
 
     
@@ -112,6 +135,7 @@ export default {
   // Filter models.
   nameFilterValue: '',
   teamFilterValue: null,
+  dialogDelete: false,
   // projects: getAllDocs(),
       }},
   computed: {
@@ -151,9 +175,13 @@ export default {
             text: '操作',
             value: 'actions',
             sortable:false,
-             }
+             },
           ]}},
-      
+  watch: {
+      dialogDelete (val) {
+        val || this.closeDelete()
+      },
+    },    
   methods: {
       nameFilter(value) {
         // If this filter has no value we just skip the entire filter.
@@ -177,7 +205,19 @@ export default {
         // Check if the current loop value (The teams value)
         // equals to the selected value at the <v-select>.
         return value === this.teamFilterValue;
-      }
+      },
+        deleteItem (item) {
+        db.collection('projects').doc(item.id).delete();
+        this.dialogDelete = true
+      },
+       deleteItemConfirm () {
+        this.projects.splice(this.editedIndex, 1)
+        this.closeDelete()
+      },
+       closeDelete () {
+        this.dialogDelete = false
+      },
+
       }
 }
   
