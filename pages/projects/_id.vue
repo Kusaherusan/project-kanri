@@ -35,30 +35,13 @@ export default {
   },
 
   methods: {
-    UpdateSubmit: function (project) {
-      // メソッド内の `this` は、 Vue インスタンスを参照します
-      // db.collection('projects').doc(this.project.id).set({
-      db.collection("projects").doc(this.$route.params.id).set({
-        Amoney: this.project.Amoney,
-        name: this.project.name,
-        team: this.project.team,
-      });
+    UpdateSubmit: async function() {
+         await setProject(this.$route.params.id,this.project)
       this.snack = true;
       this.snackColor = "success";
-      this.snackText = "更新できたよ（多分ね）";
-      // .then(function () {
-      // this.snack = true
-      // this.snackColor = 'success'
-      // this.snackText = 'Data saved'
-      // console.log("Document successfully written!");
-      // });
+      this.snackText = "更新できたよ";
     },
-    // save: function () {
-    //     this.snack = true
-    //     this.snackColor = 'success'
-    //     this.snackText = 'Data saved'
-    //   }
-  },
+   },
 };
 // get all documents
 async function getOneDocs(params) {
@@ -69,6 +52,13 @@ async function getOneDocs(params) {
     oneProject = doc.data();
   });
   return oneProject;
+}
+async function setProject(id,project) {
+  await db.collection("projects").doc(id).set({
+        Amoney: project.Amoney,
+        name: project.name,
+        team: project.team,
+  });
 }
 </script>
 
