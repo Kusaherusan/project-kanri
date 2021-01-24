@@ -157,8 +157,8 @@ export default {
       team: "",
       },
       teams: ["ひまわり", "たんぽぽ", "あさがお", "どんぐり"],
-      // projects: getAllDocs(),
-      projects: [],
+      
+      // projects: [],
     };
   },
   computed: {
@@ -195,10 +195,10 @@ export default {
           text: "工数消化率",
           value: "man-hours-rate",
         },
-                {
-          text: "最終更新",
-          value: "latestupdate",
-        },
+        //         {
+        //   text: "最終更新",
+        //   value: "latestupdate",
+        // },
         {
           text: "操作",
           value: "actions",
@@ -259,17 +259,20 @@ export default {
       this.dialogDelete = false;
     },
     InsertSubmit: async function () {
+      this.editedItem.time = new Date()
       await db
         .collection("projects")
         .add({
           bango: this.editedItem.bango,
           name: this.editedItem.name,
           team: this.editedItem.team,
-          "latestupdate": new Date()
+          latestupdate:this.editedItem.time, 
+          // latestupdate: new Date()
         })
         .then(function () {
           console.log("Document successfully written!");
         });
+      this.projects.push(this.editedItem)
       this.close();
     },
   },
@@ -283,7 +286,7 @@ async function getAllDocs() {
   allSnapShot.forEach((doc) => {
     const pj = doc.data();
     pj.id = doc.id;
-    // pj.latestupdate=pj.latestupdate.toDate()
+    // pj.latestupdate=pj.latestupdate.toDate();
     obj.push(pj);
   });
   return obj;
