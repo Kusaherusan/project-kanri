@@ -152,17 +152,16 @@ export default {
       dialog: false,
       dialogDelete: false,
       editedItem: {
-      bango: "",
-      name: "",
-      team: "",
+        bango: "",
+        name: "",
+        team: "",
       },
       teams: ["ひまわり", "たんぽぽ", "あさがお", "どんぐり"],
-      
+
       // projects: [],
     };
   },
   computed: {
-   
     headers() {
       return [
         {
@@ -206,7 +205,6 @@ export default {
         },
       ];
     },
-    
   },
   watch: {
     dialog(val) {
@@ -259,20 +257,20 @@ export default {
       this.dialogDelete = false;
     },
     InsertSubmit: async function () {
-      this.editedItem.time = new Date()
+      this.editedItem.time = new Date();
       await db
         .collection("projects")
         .add({
           bango: this.editedItem.bango,
           name: this.editedItem.name,
           team: this.editedItem.team,
-          latestupdate:this.editedItem.time, 
+          latestupdate: this.editedItem.time,
           // latestupdate: new Date()
         })
         .then(function () {
           console.log("Document successfully written!");
         });
-      this.projects.push(this.editedItem)
+      this.projects.push(this.editedItem);
       this.close();
     },
   },
