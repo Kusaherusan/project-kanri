@@ -1,17 +1,9 @@
 <template>
   <v-app dark>
-    <v-app-bar
-      color="teal lighten-3"
-      dark
-      app
-    >
-      <v-toolbar-title 
-      @click="$router.push('/')"
-      class="toolbar-title">
-        
-          プロジェクト管理したい
-        
-    </v-toolbar-title>
+    <v-app-bar color="teal lighten-3" dark app>
+      <v-toolbar-title @click="$router.push('/')" class="toolbar-title">
+        プロジェクト管理したい
+      </v-toolbar-title>
     </v-app-bar>
     <v-main>
       <v-container>
