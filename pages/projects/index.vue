@@ -28,43 +28,56 @@
           </v-tooltip> -->
             </v-col>
           </template>
+
           <v-card>
             <v-card-title>
               <span class="headline">プロジェクトを追加する</span>
             </v-card-title>
-
-            <v-card-text>
-              <v-container>
-                <v-row>
-                  <v-col cols="12" sm="6" md="4">
-                    <v-text-field
-                      v-model="editedItem.bango"
-                      label="プロジェクトID"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col cols="12" sm="20" md="4">
-                    <v-text-field
-                      v-model="editedItem.name"
-                      label="プロジェクト名"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col cols="12" sm="6" md="4">
-                    <v-autocomplete
-                      label="担当チーム"
-                      v-model="editedItem.team"
-                      :items="teams"
-                    ></v-autocomplete>
-                  </v-col>
-                </v-row>
-              </v-container>
-            </v-card-text>
-
+            <v-form v-model="isrtvalid" ref="isrtItem" lazy-validation>
+              <v-card-text>
+                <v-container>
+                  <v-row>
+                    <v-col cols="12" sm="6" md="4">
+                      <v-text-field
+                        v-model="editedItem.bango"
+                        label="プロジェクトID"
+                        :rules="bangoRules"
+                        required
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" sm="20" md="4">
+                      <v-text-field
+                        v-model="editedItem.name"
+                        label="プロジェクト名"
+                        :rules="nameRules"
+                        counter="30"
+                        required
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" sm="6" md="4">
+                      <v-autocomplete
+                        label="担当チーム"
+                        v-model="editedItem.team"
+                        :rules="teamRules"
+                        :items="teams"
+                        required
+                      ></v-autocomplete>
+                    </v-col>
+                  </v-row>
+                </v-container>
+              </v-card-text>
+            </v-form>
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="blue darken-1" text @click="close">
                 やめとく
               </v-btn>
-              <v-btn color="blue darken-1" text @click="InsertSubmit">
+              <v-btn
+                color="blue darken-1"
+                :disabled="!isrtvalid"
+                text
+                @click="InsertSubmit"
+              >
                 追加する
               </v-btn>
             </v-card-actions>
@@ -151,11 +164,20 @@ export default {
       teamFilterValue: null,
       dialog: false,
       dialogDelete: false,
+      isrtvalid: false,
       editedItem: {
         bango: "",
         name: "",
         team: "",
       },
+      bangoRules: [(v) => !!v || "必須項目",
+      v => /^\d{6}$/.test(v)|| "6桁数字のみ",
+      ],
+      nameRules: [
+        (v) => !!v || "必須項目",
+        (v) => v.length <= 30 || "文字数オーバー",
+      ],
+      teamRules: [(v) => !!v || "必須項目"],
       teams: ["ひまわり", "たんぽぽ", "あさがお", "どんぐり"],
 
       // projects: [],
@@ -241,7 +263,7 @@ export default {
     close() {
       this.dialog = false;
       this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
+        this.editedItem = Object.assign({}, this.editedItem);
         this.editedIndex = -1;
       });
     },
@@ -257,21 +279,25 @@ export default {
       this.dialogDelete = false;
     },
     InsertSubmit: async function () {
-      this.editedItem.time = new Date();
-      await db
-        .collection("projects")
-        .add({
-          bango: this.editedItem.bango,
-          name: this.editedItem.name,
-          team: this.editedItem.team,
-          latestupdate: this.editedItem.time,
-          // latestupdate: new Date()
-        })
-        .then(function () {
-          console.log("Document successfully written!");
-        });
-      this.projects.push(this.editedItem);
-      this.close();
+      if (this.$refs.isrtItem.validate()) {
+        // すべてのバリデーションが通過したときのみ
+        // if文の中に入る
+        this.editedItem.time = new Date();
+        await db
+          .collection("projects")
+          .add({
+            bango: this.editedItem.bango,
+            name: this.editedItem.name,
+            team: this.editedItem.team,
+            latestupdate: this.editedItem.time,
+            // latestupdate: new Date()
+          })
+          .then(function () {
+            console.log("Document successfully written!");
+          });
+        this.projects.push(this.editedItem);
+        this.close();
+      }
     },
   },
 };
