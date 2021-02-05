@@ -150,7 +150,6 @@
 
 <script>
 import db from "~/plugins/firebase";
-
 export default {
   async asyncData() {
     return {
@@ -179,7 +178,6 @@ export default {
       ],
       teamRules: [(v) => !!v || "必須項目"],
       teams: ["ひまわり", "たんぽぽ", "あさがお", "どんぐり"],
-
       // projects: [],
     };
   },
@@ -301,7 +299,6 @@ export default {
     },
   },
 };
-
 // get all documents
 async function getAllDocs() {
   let obj = [];

@@ -14,7 +14,6 @@ module.exports = {
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
     ]
   },
-  
   modules: [
     //  'semantic-ui-vue/nuxt', // includes styles from semantic-ui-css
     //  ['semantic-ui-vue/nuxt', { css: false }], // if you have your own semantic-ui styles
