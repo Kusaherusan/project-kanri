@@ -1,16 +1,16 @@
 <template>
   <v-container>
-    <!-- テーブルを指定 -->
+    <!-- プロジェクト一覧表示 -->
     <v-data-table :headers="headers" :items="projects" item-key="id">
-      <!-- テーブルの上部に指定 -->
       <template v-slot:top>
         <!-- タイトル -->
         <v-toolbar-title>プロジェクト達</v-toolbar-title>
+        <!-- インサート用ダイアログ
+        v-model="dialog"　で表示非表示を制御 -->
         <v-dialog v-model="dialog" max-width="500px">
           <template v-slot:activator="{ on, attrs }">
             <v-col class="text-right">
-              <!-- <v-tooltip bottom　#activator="{ on> -->
-
+              <!-- インサート用ダイアログを開くボタン -->
               <v-btn
                 class="mx-2"
                 fab
@@ -22,10 +22,6 @@
               >
                 <v-icon dark> mdi-plus </v-icon>
               </v-btn>
-
-              <!-- インサートボタンにカーソルを合わせたときのメッセージ -->
-              <!-- <span>プロジェクトを追加する</span>
-          </v-tooltip> -->
             </v-col>
           </template>
 
@@ -33,6 +29,7 @@
             <v-card-title>
               <span class="headline">プロジェクトを追加する</span>
             </v-card-title>
+            <!-- 入力フォーム -->
             <v-form v-model="isrtvalid" ref="isrtItem" lazy-validation>
               <v-card-text>
                 <v-container>
@@ -69,9 +66,12 @@
             </v-form>
             <v-card-actions>
               <v-spacer></v-spacer>
+              <!-- やめとくボタン -->
               <v-btn color="blue darken-1" text @click="close">
                 やめとく
               </v-btn>
+              <!-- インサート実行ボタン 
+              入力エラーが無くなったときのみ、活性化-->
               <v-btn
                 color="blue darken-1"
                 :disabled="!isrtvalid"
@@ -83,27 +83,7 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
-        <!-- インサートボタン -->
-        <!-- <v-col class="text-right">
-          <v-tooltip bottom>
-            <template v-slot:activator="{ on }">
-              <v-btn
-                class="mx-2"
-                fab
-                dark
-                large
-                color="cyan"
-                :to="'/insert'"
-                nuxt
-                v-on="on"
-              >
-                <v-icon dark> mdi-plus </v-icon>
-              </v-btn>
-            </template> -->
-        <!-- インサートボタンにカーソルを合わせたときのメッセージ -->
-        <!-- <span>プロジェクトを追加する</span>
-          </v-tooltip>
-        </v-col> -->
+        <!-- 検索用エリア -->
         <v-row class="px-2">
           <v-col cols="6" class="pa-1">
             <v-text-field
@@ -122,14 +102,17 @@
             ></v-select>
           </v-col>
         </v-row>
+        <!-- デリート用ダイアログエリア -->
         <v-dialog v-model="dialogDelete" max-width="300px">
           <v-card>
             <v-card-title class="headline">ほんとに削除する？</v-card-title>
             <v-card-actions>
               <v-spacer></v-spacer>
+              <!-- やめとくボタン -->
               <v-btn color="blue darken-1" text @click="closeDelete"
                 >やめとく</v-btn
               >
+              <!-- 削除ボタン -->
               <v-btn color="blue darken-1" text @click="deleteItemConfirm"
                 >削除する
               </v-btn>
@@ -138,10 +121,13 @@
           </v-card>
         </v-dialog>
       </template>
+      <!-- プロジェクト一覧オブジェクトの項目以外を表示するエリア -->
       <template v-slot:[`item.actions`]="{ item }">
+        <!-- 編集画面へ遷移するボタン -->
         <v-btn icon :to="'/projects/' + item.id" nuxt>
           <v-icon dark> mdi-pencil </v-icon>
         </v-btn>
+        <!-- デリート用ダイアログを表示するボタン -->
         <v-icon @click="deleteItem(item)"> mdi-delete </v-icon>
       </template>
     </v-data-table>
@@ -150,39 +136,53 @@
 
 <script>
 import db from "~/plugins/firebase";
+
 export default {
-  async asyncData() {
-    return {
-      projects: await getAllDocs(),
-    };
-  },
   data() {
     return {
-      // Filter models.
-      nameFilterValue: "",
-      teamFilterValue: null,
-      dialog: false,
-      dialogDelete: false,
-      isrtvalid: false,
+      nameFilterValue: "", // 検索用：プロジェクト名
+      teamFilterValue: null, // 検索用：チーム名
+      dialog: false, //　インサート画面表示フラグ
+      dialogDelete: false, //　デリート画面表示フラグ
+      isrtvalid: false, //　インサート画面のバリデーション状態フラグ
+      deleteId: "", //　デリート時のプロジェクトキー情報一時退避エリア
       editedItem: {
-        bango: "",
-        name: "",
-        team: "",
+        //　インサート画面の編集用エリア
+        bango: "", //プロジェクトID
+        name: "", //プロジェクト名
+        team: "", //担当チーム
       },
-      bangoRules: [(v) => !!v || "必須項目",
-      v => /^\d{6}$/.test(v)|| "6桁数字のみ",
+      bangoRules: [
+        //バリデーション：プロジェクトID
+        (v) => !!v || "必須項目",
+        (v) => /^\d{6}$/.test(v) || "6桁数字のみ",
       ],
       nameRules: [
+        //バリデーション：プロジェクト名
         (v) => !!v || "必須項目",
         (v) => v.length <= 30 || "文字数オーバー",
       ],
-      teamRules: [(v) => !!v || "必須項目"],
-      teams: ["ひまわり", "たんぽぽ", "あさがお", "どんぐり"],
-      // projects: [],
+      teamRules: [
+        //バリデーション：担当チーム
+        (v) => !!v || "必須項目",
+      ],
+      teams: [
+        //担当チーム選択用リスト（別の場所に変えたい・・・）
+        "ひまわり",
+        "たんぽぽ",
+        "あさがお",
+        "どんぐり",
+      ],
+      projects: [], //プロジェクト一覧格納用エリア
     };
+  },
+  firestore: {
+    //vuefireの機能で、FireStoreとprojectsオブジェクトを同期
+    projects: db.collection("projects"),
   },
   computed: {
     headers() {
+      //プロジェクト一覧のタイトル行
       return [
         {
           text: "プロジェクトID",
@@ -191,16 +191,16 @@ export default {
         {
           text: "プロジェクト名",
           value: "name",
-          filter: this.nameFilter,
+          filter: this.nameFilter, //プロジェクト名での検索用に設定（いまいち仕組みがわからない・・・）
         },
         {
           text: "プロジェクトランク",
           value: "rank",
         },
         {
-          text: "チーム名",
+          text: "担当チーム",
           value: "team",
-          filter: this.teamFilter,
+          filter: this.teamFilter, //担当チームでの検索用に設定（いまいち仕組みがわからない・・・）
         },
         {
           text: "工程",
@@ -215,68 +215,67 @@ export default {
           value: "man-hours-rate",
         },
         //         {
-        //   text: "最終更新",
+        //   text: "最終更新",　　//そのまま表示するとFireStoreのTimeStanp型になる。moment.jsなどで表示方法を変えたい。
         //   value: "latestupdate",
         // },
         {
-          text: "操作",
+          text: "操作", //編集ボタンとデリートボタン配置用エリア
           value: "actions",
           sortable: false,
         },
       ];
     },
-  },
-  watch: {
-    dialog(val) {
-      val || this.close();
-    },
-    dialogDelete(val) {
-      val || this.closeDelete();
-    },
-  },
+  }, //https://vuetifyjs.com/ja/components/data-tables/#edit-dialog
+  //参考にしたものにはついていた 下記のCRUD アクションのscript
+  //なくても問題はなさそうなのでコメント化
+  // watch: {
+  //   dialog(val) {
+  //     val || this.close();
+  //   },
+  //   dialogDelete(val) {
+  //     val || this.closeDelete();
+  //   },
+  // },
   methods: {
     nameFilter(value) {
-      // If this filter has no value we just skip the entire filter.
       if (!this.nameFilterValue) {
         return true;
       }
-      // Check if the current loop value (The project name)
-      // partially contains the searched word.
+      // 検索欄（プロジェクト名）に入力があるとフィルター有効化
       return value.toLowerCase().includes(this.nameFilterValue.toLowerCase());
     },
-    /**
-     * Filter for calories column.
-     * @param value Value to be tested.
-     * @returns {boolean}
-     */
     teamFilter(value) {
-      // If this filter has no value we just skip the entire filter.
       if (!this.teamFilterValue) {
         return true;
       }
-      // Check if the current loop value (The teams value)
-      // equals to the selected value at the <v-select>.
+      // 検索欄（チーム欄）で何かを選択するとフィルター有効化
       return value === this.teamFilterValue;
     },
     close() {
+      //インサート画面を閉じる。
       this.dialog = false;
-      this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.editedItem);
-        this.editedIndex = -1;
-      });
     },
     deleteItem(item) {
-      db.collection("projects").doc(item.id).delete();
+      //対象のプロジェクトキーを保管
+      //デリート画面を開く
+      this.deleteId = item.id;
       this.dialogDelete = true;
     },
     deleteItemConfirm() {
-      this.projects.splice(this.editedIndex, 1);
+      //デリートを実行
+      console.log(this.deleteId);
+      db.collection("projects").doc(this.deleteId).delete();
+      console.log("delete scuccse");
       this.closeDelete();
     },
     closeDelete() {
+      //デリート画面を閉じる。
       this.dialogDelete = false;
+      //デリート用プロジェクトキー初期化
+      this.deleteId = "";
     },
     InsertSubmit: async function () {
+      //インサート画面でインサート実行時に稼働。
       if (this.$refs.isrtItem.validate()) {
         // すべてのバリデーションが通過したときのみ
         // if文の中に入る
@@ -288,30 +287,16 @@ export default {
             name: this.editedItem.name,
             team: this.editedItem.team,
             latestupdate: this.editedItem.time,
-            // latestupdate: new Date()
           })
           .then(function () {
-            console.log("Document successfully written!");
+            console.log("insert success");
           });
-        this.projects.push(this.editedItem);
+        //インサート画面を閉じる。
         this.close();
       }
     },
   },
 };
-// get all documents
-async function getAllDocs() {
-  let obj = [];
-  let pjRef = db.collection("projects");
-  const allSnapShot = await pjRef.get();
-  allSnapShot.forEach((doc) => {
-    const pj = doc.data();
-    pj.id = doc.id;
-    // pj.latestupdate=pj.latestupdate.toDate();
-    obj.push(pj);
-  });
-  return obj;
-}
 </script>
 
 
