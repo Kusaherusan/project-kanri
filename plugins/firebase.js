@@ -2,6 +2,10 @@ import firebase from 'firebase/app'
 
 import 'firebase/firestore'
 
+import Vue from 'vue'
+import { firestorePlugin } from 'vuefire'
+
+Vue.use(firestorePlugin)
 
 if (!firebase.apps.length) {
 firebase.initializeApp({
@@ -16,6 +20,11 @@ firebase.initializeApp({
 }
  
 const db = firebase.firestore()
-const settings = { timestampsInSnapshots: true }
-db.settings(settings)
+// Export types that exists in Firestore
+// This is not always necessary, but it's used in other examples
+const { Timestamp, GeoPoint } = firebase.firestore
+export { Timestamp, GeoPoint }
+
+// if using Firebase JS SDK < 5.8.0
+db.settings({ timestampsInSnapshots: true })
 export default db
