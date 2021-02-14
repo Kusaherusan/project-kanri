@@ -70,7 +70,7 @@
               <v-btn color="blue darken-1" text @click="close">
                 やめとく
               </v-btn>
-              <!-- インサート実行ボタン 
+              <!-- インサート実行ボタン
               入力エラーが無くなったときのみ、活性化-->
               <v-btn
                 color="blue darken-1"
@@ -155,12 +155,12 @@ export default {
       bangoRules: [
         //バリデーション：プロジェクトID
         (v) => !!v || "必須項目",
-        (v) => /^\d{6}$/.test(v) || "6桁数字のみ",
+        (v) => v && /^\d{6}$/.test(v) || "6桁数字のみ",
       ],
       nameRules: [
         //バリデーション：プロジェクト名
         (v) => !!v || "必須項目",
-        (v) => v.length <= 30 || "文字数オーバー",
+        (v) => v && v.length <= 30 || "文字数オーバー",
       ],
       teamRules: [
         //バリデーション：担当チーム
@@ -225,17 +225,7 @@ export default {
         },
       ];
     },
-  }, //https://vuetifyjs.com/ja/components/data-tables/#edit-dialog
-  //参考にしたものにはついていた 下記のCRUD アクションのscript
-  //なくても問題はなさそうなのでコメント化
-  // watch: {
-  //   dialog(val) {
-  //     val || this.close();
-  //   },
-  //   dialogDelete(val) {
-  //     val || this.closeDelete();
-  //   },
-  // },
+  },
   methods: {
     nameFilter(value) {
       if (!this.nameFilterValue) {
@@ -253,7 +243,9 @@ export default {
     },
     close() {
       //インサート画面を閉じる。
+      
       this.dialog = false;
+      this.$refs.isrtItem.reset()
     },
     deleteItem(item) {
       //対象のプロジェクトキーを保管
@@ -286,6 +278,7 @@ export default {
             bango: this.editedItem.bango,
             name: this.editedItem.name,
             team: this.editedItem.team,
+            Amoney: "",
             latestupdate: this.editedItem.time,
           })
           .then(function () {

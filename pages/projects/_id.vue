@@ -1,13 +1,40 @@
 <template>
-  <div class="container">
-    <h3>{{ project.id }}</h3>
-    <h3>{{ project.name }}</h3>
-    <h4>ちーむ：{{ project.team }}</h4>
-    <div>
-      <v-text-field label="受注金額" v-model="project.Amoney"></v-text-field>
-    </div>
+  <v-content>
+    <v-row class="py-5">
+      <v-btn elevation="4" to="/projects" nuxt> 一覧へ戻る </v-btn>
+      <v-spacer></v-spacer>
+      <v-btn elevation="4" dark color="blue" @click="UpdateSubmit(project)"
+        >Update</v-btn
+      >
+    </v-row>
     <br />
-    <v-btn elevation="2" @click="UpdateSubmit(project)">Update</v-btn>
+    <v-row>
+      <v-col sm="6" md="1">
+        <v-text-field
+          label="プロジェクトID"
+          v-model="editProject.bango"
+        ></v-text-field>
+      </v-col>
+      <v-col sm="4" md="4">
+        <v-text-field
+          label="プロジェクト名"
+          v-model="editProject.name"
+        ></v-text-field>
+      </v-col>
+      <v-col sm="4" md="1">
+        <v-text-field
+          label="担当チーム"
+          v-model="editProject.team"
+        ></v-text-field>
+      </v-col>
+      <v-col sm="6" md="4">
+        <v-text-field
+          label="受注金額"
+          v-model="editProject.Amoney"
+        ></v-text-field>
+      </v-col>
+    </v-row>
+
     <v-snackbar v-model="snack" :timeout="3000" :color="snackColor">
       {{ snackText }}
 
@@ -15,7 +42,8 @@
         <v-btn v-bind="attrs" text @click="snack = false"> Close </v-btn>
       </template>
     </v-snackbar>
-  </div>
+    <!-- <pre>{{ editProject }}</pre> -->
+  </v-content>
 </template>
 
 <script>
@@ -24,26 +52,27 @@ import db from "~/plugins/firebase";
 export default {
   async asyncData({ params }) {
     const colproject = await getOneDocs(params.id);
-    return { project: colproject };
+    return { editProject: colproject };
   },
   data() {
     return {
       snack: false,
       snackColor: "",
       snackText: "",
+      editProject:{},
     };
   },
 
   methods: {
-    UpdateSubmit: async function() {
-         await setProject(this.$route.params.id,this.project)
+    UpdateSubmit: async function () {
+      await setProject(this.$route.params.id, this.editProject);
       this.snack = true;
       this.snackColor = "success";
       this.snackText = "更新できたよ";
     },
-   },
+  },
 };
-// get all documents
+// get one documents
 async function getOneDocs(params) {
   let pjID = String(params);
   let oneProject = {};
@@ -53,11 +82,12 @@ async function getOneDocs(params) {
   });
   return oneProject;
 }
-async function setProject(id,project) {
+async function setProject(id, editProject) {
   await db.collection("projects").doc(id).set({
-        Amoney: project.Amoney,
-        name: project.name,
-        team: project.team,
+    Amoney: editProject.Amoney,
+    name: editProject.name,
+    team: editProject.team,
+    bango: editProject.bango,
   });
 }
 </script>
